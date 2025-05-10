@@ -1,0 +1,13 @@
+# Changes here will be overwritten by Copier
+_commit: v0.4.0
+_src_path: gh:bhklab/bhklab-project-template
+author_email: bhklab.jermiahjoseph@gmail.com
+author_full_name: Jermiah Joseph
+github_username: jjjermiah
+has_additional_authors: false
+project_description: Simple ML Project With Deployment
+project_name: Simple ML Project
+project_slug: simple-ml-project
+publish_to_github: true
+python_version: '3.13'
+repo_location: jjjermiah
