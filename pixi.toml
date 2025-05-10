@@ -1,55 +1,117 @@
 [workspace]
+channels = ["https://prefix.dev/conda-forge"]
+platforms = ["linux-64"]
 name = "simple-ml-project"
-authors = [
-    "Jermiah Joseph <bhklab.jermiahjoseph@gmail.com>"
-]
+authors = ["Jermiah Joseph <bhklab.jermiahjoseph@gmail.com>"]
 description = "Simple ML Project With Deployment"
 license = "MIT"
-channels = ["conda-forge", "bioconda"]
-platforms = ["osx-arm64", "linux-64", "win-64", "osx-64"]
 
 [environments]
-quality = { features = ["quality"], solve-group = "default" }
-docs = { features = ["docs"], solve-group = "default" }
+# alternatively, we can make 'cpu' the default environment
+default = { features = ["cpu"] }
+cpu = { features = [
+    "cpu",
+] } # duplicate so users can be clear when running scripts 
+gpu = { features = ["gpu"] }
+# dev = { features = ["gpu", "docs", "quality"] }
+# quality = { features = ["quality"] }
+# docs = { features = ["docs"] }
 
-[dependencies]
-python = ">=3.13"
+
+[tasks]
+check_gpu.cmd = 'python -c "import torch; print(torch.cuda.is_available())"'
+check_gpu.description = "Check if GPU is available"
+benchmark.cmd = "python benchmark_gpu.py"
+benchmark.description = "Run benchmark on GPU"
+train = "workflow/scripts/train.sh"
+
+[dependencies] # default dependencies
+python = ">=3.11,<3.13"
 ipython = "*"
 ipykernel = "*"
 jupyterlab = "*"
 pip = "*"
-############################################## QUALITY ###############################################
-# Quality includes linting, type checking, and formatting
-[feature.quality.dependencies]
-ruff = "*"
+pandas = ">=2.2.3,<3"
+rich = ">=14.0.0,<15"
+tabulate = ">=0.9.0,<0.10"
+numpy = ">=2.2.5,<3"
+click = ">=8.1.8,<9"
 
-[feature.quality.tasks]
-ruff-check.cmd = ["ruff", "check"]
-ruff-check.inputs = ["config/ruff.toml", "workflow"]
-ruff-check.description = "Run ruff check"
+[pypi-dependencies]
+simple-ml-project = { path = ".", editable = true }
 
-ruff-format.cmd = ["ruff", "format"]
-ruff-format.inputs = ["config/ruff.toml", "workflow"]
-ruff-format.depends-on = ["ruff-check"]
-ruff-format.description = "Run ruff format, run check first"
+############################################### ML   #############################################
+# [feature.cuda]
+# system-requirements = { cuda = "12" }
 
-qc.depends-on = ["ruff-format", "ruff-check"]
-qc.description = "Quality check: ruff check and format"
+# [feature.cuda.dependencies]
+# cuda = { version = "*", channel = "nvidia/label/cuda-11.8.0" }
+# pytorch-gpu = "*"
+# pytorch = { version = "*", channel = "pytorch" }
+# torchvision = { version = "*", channel = "pytorch" }
+# pytorch-cuda = { version = "*", channel = "pytorch" }
+# mkl = "==2024.0"
+# numpy = "<2.0"
+# rich = ">=13.9.4,<14"
+# pandas = ">=2.2.3,<3"
+# tabulate = ">=0.9.0,<0.10"
 
-############################################## DOCS ################################################
+# [feature.gpu]
+# platforms = ["linux-64"]
+# system-requirements = { cuda = "12" }
 
-[feature.docs.dependencies]
-mkdocs = "*"
-mkdocs-include-markdown-plugin = ">=7.0.0,<8"
+# [feature.gpu.pypi-dependencies]
+# torch = { version = ">=2.5.1", index = "https://download.pytorch.org/whl/cu124" }
+# torchvision = { version = ">=0.20.1", index = "https://download.pytorch.org/whl/cu124" }
 
-[feature.docs.tasks.doc-build]
-cmd = "mkdocs build -f mkdocs.yaml"
-inputs = ["docs"]
-outputs = ["site"]
-description = "Build documentation with mkdocs"
+# [feature.cpu.pypi-dependencies]
+# # OSX has no CUDA support so use the CPU here
+# torch = { version = ">=2.5.1", index = "https://download.pytorch.org/whl/cpu" }
+# torchvision = { version = ">=0.20.1", index = "https://download.pytorch.org/whl/cpu" }
 
-[feature.docs.tasks.doc-serve]
-cmd = "mkdocs serve -f mkdocs.yaml"
-depends-on = ["doc-build"]
-inputs = ["docs"]
-description = "Serve documentation with mkdocs, runs doc-build first"
+[feature.gpu.system-requirements]
+cuda = "12.0"
+
+[feature.gpu.dependencies]
+cuda-version = "12.6.*"
+pytorch-gpu = "*"
+
+[feature.cpu.dependencies]
+pytorch-cpu = "*"
+
+
+# ############################################## QUALITY ###############################################
+# # Quality includes linting, type checking, and formatting
+# [feature.quality.dependencies]
+# ruff = "*"
+
+# [feature.quality.tasks]
+# ruff-check.cmd = ["ruff", "check"]
+# ruff-check.inputs = ["config/ruff.toml", "workflow"]
+# ruff-check.description = "Run ruff check"
+
+# ruff-format.cmd = ["ruff", "format"]
+# ruff-format.inputs = ["config/ruff.toml", "workflow"]
+# ruff-format.depends-on = ["ruff-check"]
+# ruff-format.description = "Run ruff format, run check first"
+
+# qc.depends-on = ["ruff-format", "ruff-check"]
+# qc.description = "Quality check: ruff check and format"
+
+# ############################################## DOCS ################################################
+
+# [feature.docs.dependencies]
+# mkdocs = "*"
+# mkdocs-include-markdown-plugin = ">=7.0.0,<8"
+
+# [feature.docs.tasks.doc-build]
+# cmd = "mkdocs build -f mkdocs.yaml"
+# inputs = ["docs"]
+# outputs = ["site"]
+# description = "Build documentation with mkdocs"
+
+# [feature.docs.tasks.doc-serve]
+# cmd = "mkdocs serve -f mkdocs.yaml"
+# depends-on = ["doc-build"]
+# inputs = ["docs"]
+# description = "Serve documentation with mkdocs, runs doc-build first"
